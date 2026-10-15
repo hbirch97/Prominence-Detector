@@ -28,7 +28,6 @@ class PipelineConfig:
     run_name: str
     
     wow_dir: Path
-    weights: str
     conf: float
     
     # database

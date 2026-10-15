@@ -1,0 +1,20 @@
+output_dir: "./output"
+run_name: "new_test"
+
+# data
+download:
+  email: "user@domain"
+  start: "2026-10-01T00:00:01Z"
+  end: "2026-10-02T00:00:59Z"
+  wavelength: 304
+  cadence: "6h"
+
+# wow
+wow_dir: "/path/to/WOW/wavelets/"
+
+# model
+conf: 0.4
+
+# analysis
+spatial_iou_threshold: 0.25
+temporal_iou_threshold: 0.5
