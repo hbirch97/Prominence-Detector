@@ -10,26 +10,24 @@ Takes FITs input and label file to calculate relavent parameters for prominences
 """
 
 
-import os
-from pathlib import Path
-import sunpy.map
+
+import csv
 import numpy as np
-from astropy.wcs import WCS
-from astropy.io import fits
-from astropy.coordinates import SkyCoord
-import astropy.units as u
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-import matplotlib
+from tqdm import tqdm
+from typing import List
+from pathlib import Path
+from dataclasses import dataclass
+
+import sunpy.map
 from sunpy.map.maputils import all_coordinates_from_map ,coordinate_is_on_solar_disk, solar_angular_radius 
-from sunpy.coordinates import SphericalScreen, HeliographicStonyhurst, get_body_heliographic_stonyhurst
+from sunpy.coordinates import SphericalScreen, HeliographicStonyhurst
+
+import astropy.units as u
+from astropy.stats import median_absolute_deviation
+
 from aiapy.calibrate import register, update_pointing, correct_degradation
 from aiapy.calibrate.util import get_pointing_table, get_correction_table
-from dataclasses import dataclass, field
-from typing import List
-import csv
-from tqdm import tqdm
-from astropy.stats import median_absolute_deviation
+
 from skimage.filters import threshold_local
 from scipy.ndimage import map_coordinates
 from utils.Spatial_RHT_Functions import spatial_rht, filtering, convert_polar, classify_structure
@@ -61,7 +59,6 @@ def yolo_to_pixel(labels, img_width, img_height):
 # =============================================================================
 # Calibration function for AIA data
 def aia_calibrated_map(smap, pointing_table, correction_table):
-    from aiapy.calibrate import register, update_pointing, correct_degradation
     
     # Update Pointing using provided pointing table
     m_updated_pointing = update_pointing(smap, pointing_table=pointing_table)
@@ -106,10 +103,11 @@ def remove_disk(smap, threshold_pix=None):#, mask, data=None, size=None):
             mask = mask_spicules(hpc_coords, threshold_pix, smap)
         else:
             mask = coordinate_is_on_solar_disk(hpc_coords) 
-        data = smap.data
+            
+        data = smap.data.copy()
         data[mask] = np.nan  # Set outside-disk pixels to NaN
-        smap = sunpy.map.Map(data, smap.meta)  
-        return smap 
+
+        return sunpy.map.Map(data, smap.meta) 
 
     
 # =============================================================================
@@ -147,13 +145,13 @@ def label_submaps(labels: np.ndarray, smap: sunpy.map.Map) -> List[LabelledSubma
         centre_coord = wcs.pixel_to_world(x_centre[i],y_centre[i])
         
         results.append(LabelledSubmap(
-            submap       = smap.submap(bottom_left, top_right=top_right),
+            submap       = masked_smap.submap(bottom_left, top_right=top_right),
             centre_coord = centre_coord,
             label_class  = int(labels[i,0]),
-            box_w_pix    = box_w[i],
-            box_h_pix    = box_h[i],
-            x_centre_pix = x_centre[i],
-            y_centre_pix = y_centre[i],
+            box_w_pix    = box_w[i]/img_w,
+            box_h_pix    = box_h[i]/img_h,
+            x_centre_pix = x_centre[i]/img_w,
+            y_centre_pix = y_centre[i]/img_h,
             confidence   = labels[:,-1][i]
             ))
 
@@ -459,7 +457,6 @@ def postprocess(fits_dir: Path, label_dir: Path) -> None:
         # # Return LabelledSubclass dataclass for each label
         labelled_submaps = label_submaps(labels, smap_calibrated)
         properties       = calculate_box_properties(labelled_submaps)
-        #print(properties)
         
         # Write output
         write_output(properties, output_filename=output_filepath)
