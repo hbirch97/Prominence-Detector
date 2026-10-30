@@ -8,15 +8,11 @@ Created on Mon Oct  5 11:17:25 2026
 Function to download SDO/AIA data using drms
 """
 
-import os
 import drms
 import time
 from pathlib import Path
-os.chdir('/home/w22043051/Documents/Project Work/Code/ML/ProminenceAR_Model/GitHub_Files/')
-from config import DRMSConfig, PipelineConfig
+from config import DRMSConfig
 
-
-    
 def drms_download(config: DRMSConfig, output_dir: Path, run_name: str) -> None:
     """
     drms downloader    
@@ -49,7 +45,6 @@ def drms_download(config: DRMSConfig, output_dir: Path, run_name: str) -> None:
     if not dst.exists():       
         dst.mkdir(parents=True)   
         
-
     # downloading the data
     start_time = time.time()
     client = drms.Client()

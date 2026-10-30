@@ -19,43 +19,20 @@ Returns 3 channel tensor with channels:
 """
 
 
-import astropy.units as u
-from sunpy.net import Fido, attrs as a
-from datetime import datetime, timedelta
-from pathlib import Path
-import sunpy.map
 import os
-import re
-import json
-from tqdm import tqdm 
+import sunpy.map
 import numpy as np
+from tqdm import tqdm 
 from PIL import Image
+from pathlib import Path
+import astropy.units as u
+from datetime import datetime
 from skimage.transform import resize
-from astropy.coordinates import SkyCoord 
 from sunpy.map.maputils import all_coordinates_from_map ,coordinate_is_on_solar_disk 
 
 # Function to remove the solar disk from a given smap
 def remove_disk(smap, mask, data=None, size=None):       
-        """
-    
 
-    Parameters
-    ----------
-    smap : TYPE
-        DESCRIPTION.
-    mask : TYPE
-        DESCRIPTION.
-    data : TYPE, optional
-        DESCRIPTION. The default is None.
-    size : TYPE, optional
-        DESCRIPTION. The default is None.
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
-    """
         # If a specific size is provided, resize the mask accordingly
         if size is not None:
             mask = resize(mask, size)
@@ -290,6 +267,7 @@ def preprocess(input_dir: Path,  output_dir: Path, wow_dir: Path, run_name: str)
     if not dst.exists():       
         dst.mkdir(parents=True)  
 
+    print(input_dir)
     # Sort the input_files
     input_files = sorted(input_dir.glob("*.fits"))
     print(f"\nProcessing {len(input_files)} files")
