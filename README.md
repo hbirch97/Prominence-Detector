@@ -20,6 +20,10 @@ The outline of the code is as follows:
 5. Database compilation, outputting as a single csv file.
 6. **(TBD)** Analysis of the results, following from that of the article (in prep). An .ipynb notebook document will be provided to faciliate this.
 
+Example inference image, using a preprocessed SDO/AIA 304 Å observation. The number after the class label denotes the prediction confidence.
+
+<img src="example.jpg" width="500">
+
 File tree:
 ```
 [output_name]/
