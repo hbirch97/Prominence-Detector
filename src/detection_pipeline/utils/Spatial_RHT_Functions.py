@@ -28,6 +28,9 @@ from scipy import signal
 from scipy.ndimage import median_filter
 import matplotlib.pyplot as plt
 
+# supress error from arcsin
+np.seterr(invalid='ignore')
+
 # [1] Filtering function
 def filtering(data,wlen,rmean,smr_xy,med_xy,nlev):     
     mode = "same"
@@ -65,42 +68,39 @@ def spatial_rht(data_spatial_pad,wlen,smr_xy):
        
     print("*** Running RHT ***")
     # Run spatial RHT code
-    with tqdm(total=data_spatial_pad.shape[2]) as pbar:
-        for n in range(data_spatial_pad.shape[2]):
-          wpts = np.nonzero(data_spatial_pad[:,:,n]) 
-          if wpts[0].size > 0:
-            for pt in range(len(wpts[0])):
-              xc, yc = wpts[0][pt], wpts[1][pt] 
-              accum  = np.sum(data_spatial_pad[xc-rw:xc+rw+1, yc-rw:yc+rw+1, n][yacc,xacc], axis=0)
+    for n in range(data_spatial_pad.shape[2]):
+      wpts = np.nonzero(data_spatial_pad[:,:,n]) 
+      if wpts[0].size > 0:
+        for pt in range(len(wpts[0])):
+          xc, yc = wpts[0][pt], wpts[1][pt] 
+          accum  = np.sum(data_spatial_pad[xc-rw:xc+rw+1, yc-rw:yc+rw+1, n][yacc,xacc], axis=0)
+          try:
+              # RHT calculations
+              accum       = accum/np.max(accum)
+              max_acc     = np.max(accum)
+              accum_thres = accum * (accum >= (max_acc - 0.25)) 
+              theta_thres = theta_acc
+              S           = np.sum(np.sin(2*theta_thres)*accum_thres) #y
+              C           = np.sum(np.cos(2*theta_thres)*accum_thres) #x
+              mean_angle  = 0.5 * np.arctan2(S,C) 
+              ts          = np.sum(np.sin(2*theta_thres)*accum_thres)/np.sum(accum_thres) 
+              tc          = np.sum(np.cos(2*theta_thres)*accum_thres)/np.sum(accum_thres) 
+              res_len     = np.sqrt(ts**2 + tc**2) 
+              alpha2      = np.sum(accum_thres * np.cos(2*(theta_thres - mean_angle)))/np.sum(accum_thres) 
+              ng          = len(np.where(accum_thres != 0)[0]) 
+              sig2        = np.sqrt((1-alpha2)/(2*ng*res_len**2)) 
               try:
-                  # RHT calculations
-                  accum       = accum/np.max(accum)
-                  max_acc     = np.max(accum)
-                  accum_thres = accum * (accum >= (max_acc - 0.25)) 
-                  theta_thres = theta_acc
-                  S           = np.sum(np.sin(2*theta_thres)*accum_thres) #y
-                  C           = np.sum(np.cos(2*theta_thres)*accum_thres) #x
-                  mean_angle  = 0.5 * np.arctan2(S,C) 
-                  ts          = np.sum(np.sin(2*theta_thres)*accum_thres)/np.sum(accum_thres) 
-                  tc          = np.sum(np.cos(2*theta_thres)*accum_thres)/np.sum(accum_thres) 
-                  res_len     = np.sqrt(ts**2 + tc**2) 
-                  alpha2      = np.sum(accum_thres * np.cos(2*(theta_thres - mean_angle)))/np.sum(accum_thres) 
-                  ng          = len(np.where(accum_thres != 0)[0]) 
-                  sig2        = np.sqrt((1-alpha2)/(2*ng*res_len**2)) 
-                  try:
-                      err2    = np.arcsin(1.96*sig2) 
-                  except:
-                      err2    = np.nan
-                      
-                  # Store values in arrays. Filter mean_angle based on 75% of res_length
-                  rht_xy[xc, yc, n] = mean_angle if res_len >= 0.75 else np.nan
-                  rht_xy_reslen[xc,yc,n] = res_len 
-                  rht_xy_err[xc,yc,n]    = err2 
-                
-              except ValueError:
-                  pass
-          pbar.update(1)
-    pbar.close() 
+                  err2    = np.arcsin(1.96*sig2) 
+              except:
+                  err2    = np.nan
+                  
+              # Store values in arrays. Filter mean_angle based on 75% of res_length
+              rht_xy[xc, yc, n] = mean_angle if res_len >= 0.75 else np.nan
+              rht_xy_reslen[xc,yc,n] = res_len 
+              rht_xy_err[xc,yc,n]    = err2 
+            
+          except ValueError:
+              pass
     # results with padding removed. Results stored in a dictionary
     keys = ["dimension","mean angle", "error", "res length"]
     spatial_results = [rht_xy,rht_xy_err,rht_xy_reslen]
@@ -136,25 +136,6 @@ def rotation(coords):
         alpha = 2*np.pi + np.arctan2(coords[1],coords[0])  
     return alpha
 
-
-# Input submap coordinates and create conversion angle array
-def angle_map(submap):
-    # Obtain coordinate map from the smap
-    coordinates = sunpy.map.all_coordinates_from_map(submap)
-    # Create alpha array
-    alpha = np.zeros_like(spatial["mean angle"][:,:,0])*np.nan  
-    
-    wpts = np.nonzero(coordinates)
-    for pt in range(len(wpts[0])):
-        xc, yc  = wpts[0][pt], wpts[1][pt]
-        coords_arcsecs = coordinates[xc,yc]
-        coords         = (coords_arcsecs.Tx.value,coords_arcsecs.Ty.value)
-        alpha[xc,yc] = rotation(coords)
-    # Plot result 
-    plt.imshow(alpha*180/np.pi, origin="lower")
-    plt.colorbar()
-    
-    return alpha
 
 
 # convert polar angles
