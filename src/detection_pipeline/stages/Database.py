@@ -12,8 +12,6 @@ Outputs a single csv for the databse for prominences, class 0, and active region
 from pathlib import Path
 import pandas as pd
 import numpy as np
-import csv
-
 
 # Load and combine all csv together. Add parameters for limb position and convert t_obs to datetime
 def load_all_properties(csv_dir: Path):
@@ -31,6 +29,9 @@ def load_all_properties(csv_dir: Path):
     df['t_obs'] = pd.to_datetime(df['t_obs'])
     df['limb_position'] = np.where(
         df['longitude'] < 0, "West", "East"
+    )
+    df['class_label'] = np.where(
+        df['class'] == 0, "Prominence", "AR"
     )
 
     return df
@@ -179,7 +180,6 @@ def create_database(
     temporal_iou_threshold: float = 0.5,
     event_persistence_cadence: str = "0h",
 ):    
-    global df
     
     df = load_all_properties(csv_dir)
     
