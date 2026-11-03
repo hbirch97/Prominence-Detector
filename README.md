@@ -24,6 +24,44 @@ Example inference image, using a preprocessed SDO/AIA 304 Å observation. The nu
 
 <img src="example.jpg" width="500">
 
+How to run this code:
+
+1. install prerequisite packages from requirements.txt
+```bash
+pip install -r requirements.txt
+```
+
+2. edit the config.yaml file in configs/
+
+Config
+    output_dir: Path - output file directory. Defaults to ./output
+    run_name: str - run name of folder within above output directory
+    
+    wow_dir: Path - path to WOW wavelets code
+    conf: float = 0.4 - confidence threshold for the inference predictions. Predictions with lower confidence will be discarded. defaults to 0.4
+    
+    # database
+    spatial_iou_threshold: float = 0.25 - spatial IoU threshold for filtering predictions for the database
+    temporal_iou_threshold: float = 0.5 - temporal IoU threshold for filtering predictions for the tracking code
+    event_persistence_cadence: str = "0h" - 
+    
+    # optional - must provide one
+    download: DRMSConfig | None = None - optional download configs. If none supplied the code will expect to use FITS file in the ./output/run_name/downloads/ directory
+    fits_dir: Path | None = None - if no download is supplied must supply instead a path to directory of fits files
+
+Downloading configs:
+    email: str - email string for registered JSOC email address
+    start: str - start time for observations
+    end: str - end time for observations 
+    wavelength: int - wavelenght for observations (i.e. 304)
+    cadence: str - observation cadence (i.e. 24h, 6m, 12s, etc.)
+
+3. Run code as 
+```python
+python3 src/detection_pipeline/pipeline.py
+```
+
+4. Outputs are as follows:  
 File tree:
 ```
 [output_name]/
