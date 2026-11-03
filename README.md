@@ -44,7 +44,7 @@ Config
     # database
     spatial_iou_threshold: float = 0.25 - spatial IoU threshold for filtering predictions for the database
     temporal_iou_threshold: float = 0.5 - temporal IoU threshold for filtering predictions for the tracking code
-    event_persistence_cadence: str = "0h" - 
+    event_persistence_cadence: str = "0h" - additional gap tolerance for tracking events. Gap = cadence + event_persistence_cadence. Defaults to 0. If no cadence was supplied then the code takes the difference between the first two images as the cadence.
     
     # optional - must provide one
     download: DRMSConfig | None = None - optional download configs. If none supplied the code will expect to use FITS file in the ./output/run_name/downloads/ directory
