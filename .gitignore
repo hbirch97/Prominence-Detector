@@ -1,0 +1,10 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Generated files
+cache/
+output/
+
+# Local analysis
+src/detection_pipeline/Analysis.py
