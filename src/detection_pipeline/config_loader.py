@@ -34,9 +34,5 @@ def load_config(path: str | Path) -> PipelineConfig:
     # Convert nested download config into a DRMSConfig object
     if data.get("download") is not None:
         data["download"] = DRMSConfig(**data["download"])
-
-    # Convert directory strings into Path objects
-    data["output_dir"] = Path(data["output_dir"])
-    data["wow_dir"] = Path(data["wow_dir"])
     
     return PipelineConfig(**data)

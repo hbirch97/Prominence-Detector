@@ -38,22 +38,34 @@ class PipelineConfig:
     
         
     wow_dir: Path
-    conf: float
+    conf: float = 0.4
     
     # database
     spatial_iou_threshold: float = 0.25
     temporal_iou_threshold: float = 0.5
     event_persistence_cadence: str = "0h"
     
-    # optional
+    # optional data source: provide exactly one of these
     download: DRMSConfig | None = None
+    fits_dir: Path | None = None
 
     def __post_init__(self):
         # resolve paths
         self.output_dir = _abs(self.output_dir)
         if self.wow_dir is not None:
             self.wow_dir = _abs(self.wow_dir)
-            
+        
+        # data source
+        if self.download is None and self.fits_dir is None:
+            raise ValueError("Provide either `download` settings or `fits_dir`.")
+        if self.download is not None and self.fits_dir is not None:
+            raise ValueError("Provide only one of `download` or `fits_dir`, not both.")
+        
+        if self.fits_dir is not None:
+            self.fits_dir = _abs(self.fits_dir)
+            if not self.fits_dir.is_dir():
+                raise FileNotFoundError(f"fits_dir does not exist: {self.fits_dir}")
+        
         # Validate thresholds
         for name in (
             "spatial_iou_threshold",

@@ -45,10 +45,13 @@ def run_pipeline(config: PipelineConfig):
             output_dir=config.output_dir,
             run_name=config.run_name,
         )
-    
+        download_dir = (config.output_dir / config.run_name / "downloads")
+    else:
+        download_dir = config.fits_dir # use given download dir if no download specified
+        
     # data preprocessing
     print("\n[2/5] === Preprocessing images ===")
-    preprocess(input_dir=(config.output_dir / config.run_name / "downloads"),
+    preprocess(input_dir=download_dir,
                output_dir=config.output_dir,
                wow_dir=config.wow_dir,
                run_name=config.run_name)
@@ -62,7 +65,7 @@ def run_pipeline(config: PipelineConfig):
 
     # dataset postprocessing                
     print("\n[4/5] === Postprocessing label data ===")
-    postprocess(fits_dir=(config.output_dir / config.run_name / "downloads"),
+    postprocess(fits_dir=download_dir,
                 label_dir=(config.output_dir / config.run_name / f"inference_conf={config.conf}/labels")
                 )
     
