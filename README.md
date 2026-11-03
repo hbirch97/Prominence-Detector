@@ -26,13 +26,14 @@ Example inference image, using a preprocessed SDO/AIA 304 Å observation. The nu
 
 How to run this code:
 
-1. install prerequisite packages from requirements.txt
+1. Install prerequisite packages from requirements.txt
 ```bash
 pip install -r requirements.txt
 ```
 
-2. edit the config.yaml file in configs/
+2. Edit the config.yaml file in configs:
 
+```
 Config
     output_dir: Path - output file directory. Defaults to ./output
     run_name: str - run name of folder within above output directory
@@ -55,6 +56,7 @@ Downloading configs:
     end: str - end time for observations 
     wavelength: int - wavelenght for observations (i.e. 304)
     cadence: str - observation cadence (i.e. 24h, 6m, 12s, etc.)
+```
 
 3. Run code as 
 ```python
