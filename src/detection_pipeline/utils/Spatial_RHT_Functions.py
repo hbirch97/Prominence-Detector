@@ -18,15 +18,11 @@ Spatial RHT Function File.
 [2] Spatial RHT function. Used for steps 5 & 6 in the Spatial RHT pipeline.
 """
 
-import os
 import time
 import math as m
-import matplotlib
 import numpy as np
-from tqdm import tqdm
 from scipy import signal
 from scipy.ndimage import median_filter
-import matplotlib.pyplot as plt
 
 # supress error from arcsin
 np.seterr(invalid='ignore')
