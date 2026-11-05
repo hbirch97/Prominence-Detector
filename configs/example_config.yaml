@@ -10,7 +10,7 @@ download:
   cadence: "6h"
 
 # wow
-wow_dir: "/path/to/WOW/wavelets/"
+wow_dir: "../wavelets/"
 
 # model
 conf: 0.4
